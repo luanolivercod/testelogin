@@ -72,6 +72,54 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="auth.js"></script>
+    <script>
+        // **IMPORTANTE:** Substitua pela sua chave anon
+        const SUPABASE_URL = 'https://qauhukqeanfpqarxtiqc.supabase.co';
+        const SUPABASE_ANON_KEY = 'SUA_CHAVE_ANON_AQUI'; // <-- COLOQUE SUA CHAVE AQUI
+
+        const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Lógica de login
+        async function signInWithEmail() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (error) {
+                alert('Erro no login: ' + error.message);
+            } else {
+                alert('Login bem-sucedido!');
+                // Aqui você pode redirecionar o usuário para a página principal
+                // window.location.href = 'index.html'; 
+            }
+        }
+
+        // Lógica de registro
+        async function signUpNewUser() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+            });
+
+            if (error) {
+                alert('Erro no registro: ' + error.message);
+            } else {
+                alert('Usuário criado com sucesso! Verifique seu e-mail para confirmar a conta.');
+            }
+        }
+
+        // Associa as funções aos botões
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('login-btn').addEventListener('click', signInWithEmail);
+            document.getElementById('signup-btn').addEventListener('click', signUpNewUser);
+        });
+    </script>
 </body>
 </html>
