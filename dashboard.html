@@ -3,23 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Meu Site Simples</title>
+    <title>Dashboard</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #f0f0f0; }
-        .container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        input { display: block; margin: 1rem 0; padding: 0.5rem; width: 100%; box-sizing: border-box; }
-        button { padding: 0.75rem 1.5rem; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        body { font-family: sans-serif; display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; background-color: #e0f7fa; }
+        h1 { color: #007bff; }
+        button { padding: 0.75rem 1.5rem; background-color: #dc3545; color: white; border: none; cursor: pointer; margin-top: 1rem; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Página de Login</h2>
-        <form id="loginForm">
-            <input type="email" id="email" placeholder="E-mail" required>
-            <input type="password" id="senha" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
-        </form>
-        <p>Não tem uma conta? <a href="#" id="criarContaBtn">Criar conta</a></p>
+    <div id="dashboard-content" style="display: none;">
+        <h1>Bem-vindo! Você está logado.</h1>
+        <p>Este é o conteúdo secreto da sua página.</p>
+        <button id="logoutBtn">Sair</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -27,7 +22,7 @@
 
     <script>
         // COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
-        const firebaseConfig = {
+       const firebaseConfig = {
           apiKey: "AIzaSyBEE7xSDBPfhEPDMSa_uVLqh9Il-IZ2MyE",
           authDomain: "testelogin-f1b9a.firebaseapp.com",
           projectId: "testelogin-f1b9a",
@@ -40,41 +35,27 @@
         const app = firebase.initializeApp(firebaseConfig);
         const auth = app.auth();
 
-        // Referências aos elementos
-        const loginForm = document.getElementById('loginForm');
-        const criarContaBtn = document.getElementById('criarContaBtn');
-        const emailInput = document.getElementById('email');
-        const senhaInput = document.getElementById('senha');
+        // Referência para o contêiner de conteúdo
+        const dashboardContent = document.getElementById('dashboard-content');
+        const logoutBtn = document.getElementById('logoutBtn');
 
-        // Lidar com o login
-        loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const senha = senhaInput.value;
-
-            auth.signInWithEmailAndPassword(email, senha)
-                .then(() => {
-                    window.location.href = 'dashboard.html';
-                })
-                .catch(error => {
-                    alert('Erro no login: ' + error.message);
-                });
+        // Lidar com o logout
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            }).catch(error => {
+                console.error("Erro ao sair:", error);
+            });
         });
 
-        // Lidar com a criação de conta
-        criarContaBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const email = prompt("Digite seu e-mail para registro:");
-            const senha = prompt("Digite uma senha (mínimo 6 caracteres):");
-            
-            if (email && senha) {
-                auth.createUserWithEmailAndPassword(email, senha)
-                    .then(() => {
-                        alert("Conta criada com sucesso! Faça login para continuar.");
-                    })
-                    .catch(error => {
-                        alert("Erro ao criar conta: " + error.message);
-                    });
+        // Proteger a página - verificar se o usuário está logado
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // Usuário está logado. Mostra o conteúdo.
+                dashboardContent.style.display = 'block';
+            } else {
+                // Não há usuário logado. Redireciona.
+                window.location.href = 'index.html';
             }
         });
     </script>
