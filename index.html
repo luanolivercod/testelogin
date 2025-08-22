@@ -127,6 +127,7 @@
                 // Busca a função do usuário no Firestore
                 db.collection('users').doc(user.uid).get().then(doc => {
                     if (doc.exists) {
+                    console.log("A função lida do Firestore é:", doc.data().role);
                         renderFeatures(doc.data().role);
                     } else {
                         // Se o usuario nao tem dados, esconde as funcionalidades restritas
