@@ -120,7 +120,7 @@
         //---------------------------------------------------------
         // 1. COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
         //---------------------------------------------------------
-        const firebaseConfig = {
+       const firebaseConfig = {
   apiKey: "AIzaSyBEE7xSDBPfhEPDMSa_uVLqh9Il-IZ2MyE",
   authDomain: "testelogin-f1b9a.firebaseapp.com",
   projectId: "testelogin-f1b9a",
@@ -128,9 +128,11 @@
   messagingSenderId: "969681313751",
   appId: "1:969681313751:web:5929af3f9fb923eb737592"
 };
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+      
+        // Inicializa o Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = app.auth();
+        const db = app.firestore();
 
         //---------------------------------------------------------
         // 2. REFERÊNCIAS E CONFIGURAÇÃO
