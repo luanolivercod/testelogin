@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portal de Ferramentas Farmacêuticas</title>
+    <title>Novo Projeto com Login</title>
     <style>
         body { font-family: sans-serif; margin: 0; padding: 0; background-color: #f0f4f8; }
         header { background-color: #066b30; color: white; padding: 1rem; display: flex; justify-content: space-between; align-items: center; }
@@ -27,8 +27,8 @@
     <div class="container">
         <h2>Ferramentas Públicas</h2>
         <div id="public-features" class="buttons-container">
-            <button>Calculadora de Diluição (Pública)</button>
-            <button>Análise de Custo (Pública)</button>
+            <button>Calculadora (Pública)</button>
+            <button>Análise (Pública)</button>
         </div>
 
         <hr>
@@ -58,22 +58,26 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
-        // COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
+        //---------------------------------------------------------
+        // 1. COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
+        //---------------------------------------------------------
         const firebaseConfig = {
-          apiKey: "AIzaSyBEE7xSDBPfhEPDMSa_uVLqh9Il-IZ2MyE",
-          authDomain: "testelogin-f1b9a.firebaseapp.com",
-          projectId: "testelogin-f1b9a", 
-          storageBucket: "testelogin-f1b9a.firebasestorage.app",
-          messagingSenderId: "969681313751",
-          appId: "1:969681313751:web:5929af3f9fb923eb737592"
-        };
+  apiKey: "AIzaSyBEE7xSDBPfhEPDMSa_uVLqh9Il-IZ2MyE",
+  authDomain: "testelogin-f1b9a.firebaseapp.com",
+  projectId: "testelogin-f1b9a",
+  storageBucket: "testelogin-f1b9a.firebasestorage.app",
+  messagingSenderId: "969681313751",
+  appId: "1:969681313751:web:5929af3f9fb923eb737592"
+};
       
         // Inicializa o Firebase
         const app = firebase.initializeApp(firebaseConfig);
         const auth = app.auth();
         const db = app.firestore();
 
-        // Referências aos elementos HTML
+        //---------------------------------------------------------
+        // 2. REFERÊNCIAS DOS ELEMENTOS HTML
+        //---------------------------------------------------------
         const authButtonsContainer = document.getElementById('auth-buttons-container');
         const loginFormContainer = document.getElementById('login-form-container');
         const loginForm = document.getElementById('loginForm');
@@ -85,7 +89,9 @@
         const restrictedFeatures = document.getElementById('restricted-features');
         const restrictedButtons = document.querySelectorAll('#restricted-features button');
 
-        // Funções para controle de interface
+        //---------------------------------------------------------
+        // 3. FUNÇÕES PARA LÓGICA DO LOGIN E EXIBIÇÃO
+        //---------------------------------------------------------
         function showLoginModal() {
             loginFormContainer.style.display = 'block';
         }
@@ -127,10 +133,10 @@
                 // Busca a função do usuário no Firestore
                 db.collection('users').doc(user.uid).get().then(doc => {
                     if (doc.exists) {
-                    console.log("A função lida do Firestore é:", doc.data().role);
+                        console.log("Função do usuário:", doc.data().role);
                         renderFeatures(doc.data().role);
                     } else {
-                        // Se o usuario nao tem dados, esconde as funcionalidades restritas
+                        // Se o usuário não tem dados, esconde as funcionalidades restritas
                         restrictedFeatures.style.display = 'none';
                     }
                 });
@@ -139,7 +145,7 @@
             }
         });
 
-        // Lidar com o login por E-mail e Senha
+        // Eventos de login e registro
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const email = emailInput.value;
@@ -148,24 +154,21 @@
                 .catch(error => alert('Erro no login: ' + error.message));
         });
 
-        // Lidar com o login com o Google
         googleLoginBtn.addEventListener('click', () => {
             const provider = new firebase.auth.GoogleAuthProvider();
             auth.signInWithPopup(provider)
                 .catch(error => alert('Erro no login com o Google: ' + error.message));
         });
 
-        // Lidar com a criação de conta
         criarContaBtn.addEventListener('click', () => {
             const email = prompt("E-mail para registro:");
             const senha = prompt("Senha (mínimo 6 caracteres):");
             if (email && senha) {
                 auth.createUserWithEmailAndPassword(email, senha)
                     .then(cred => {
-                        // Cria um documento no Firestore para o novo usuário com uma funcao basica
                         return db.collection('users').doc(cred.user.uid).set({
                             email: cred.user.email,
-                            role: 'basico'
+                            role: 'basico' // Função padrão para novos usuários
                         });
                     })
                     .then(() => alert("Conta criada!"))
@@ -173,7 +176,6 @@
             }
         });
 
-        // Fechar o modal
         closeLoginBtn.addEventListener('click', hideLoginModal);
     </script>
 </body>
