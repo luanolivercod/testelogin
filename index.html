@@ -9,56 +9,73 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
+            margin: 0;
+            padding-top: 136px; /* Adiciona espaço no topo para o cabeçalho e menu */
         }
-        .app-container {
-            width: 100%;
-            height: calc(100vh - 120px); /* Ajusta a altura para caber na tela, subtraindo a altura do menu e cabeçalho */
-            border: none;
-        }
-        /* Ajustando as cores e o layout do cabeçalho */
+
         .main-header {
-            background-color: #066b30; /* Cor verde do logo */
+            background-color: #066b30;
             color: white;
             padding: 1rem;
-            text-align: center;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
             height: 80px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 20;
         }
-        .main-header img {
-            height: 64px;
-            width: auto;
-        }
-        .menu-buttons {
+
+        .menu-buttons-top {
             display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            padding: 1rem;
+            justify-content: flex-start; /* Alinha os botões à esquerda */
+            align-items: center;
             gap: 1rem;
             background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 80px; /* Posiciona o menu abaixo do cabeçalho */
+            left: 0;
+            right: 0;
+            z-index: 10;
         }
-        /* Ajustando as cores dos botões para combinar com o novo tema */
-        .menu-buttons button {
+
+        .menu-item {
             background-color: #38a169;
             color: white;
             padding: 10px 15px;
             border-radius: 6px;
             font-weight: 600;
             transition: background-color 0.3s;
+            cursor: pointer;
+            text-align: center;
         }
-        .menu-buttons button:hover {
+        .menu-item:hover {
             background-color: #2f855a;
         }
-        .menu-buttons button.active {
+        .menu-item.active {
             background-color: #066b30;
         }
+        
         .auth-buttons {
             display: flex;
             gap: 0.5rem;
         }
+        
+        .app-container {
+            width: 100%;
+            height: calc(100vh - 136px); /* Ajusta a altura para o espaço restante */
+            border: none;
+            background-color: #fff;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-top: 1rem;
+        }
+
         #login-form-container {
             position: absolute;
             top: 50%;
@@ -68,9 +85,10 @@
             background: white;
             padding: 2rem;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
             z-index: 1000;
             text-align: center;
+            width: 300px;
         }
         #login-form-container input, #login-form-container button {
             margin-top: 1rem;
@@ -78,28 +96,26 @@
             width: 100%;
             padding: 0.5rem;
             border: 1px solid #ccc;
+            border-radius: 4px;
         }
         #login-form-container button {
             background-color: #066b30;
             color: white;
+            cursor: pointer;
         }
     </style>
 </head>
-<body class="flex flex-col h-screen">
+<body>
 
     <header class="main-header">
         <h1 class="text-3xl font-bold">Portal de Ferramentas Farmacêuticas</h1>
         <div class="auth-buttons" id="auth-buttons-container">
-            </div>
+        </div>
     </header>
 
-    <nav class="menu-buttons" id="menu-buttons-container">
+    <nav class="menu-buttons-top" id="menu-buttons-container">
         </nav>
-
-    <main class="flex-grow p-4">
-        <iframe id="app-iframe" class="app-container w-full h-full rounded-lg shadow-lg bg-white p-4"></iframe>
-    </main>
-
+    
     <div id="login-form-container">
         <h2>Login</h2>
         <form id="loginForm">
@@ -107,9 +123,9 @@
             <input type="password" id="senha" placeholder="Senha" required>
             <button type="submit">Entrar</button>
         </form>
-        <button id="googleLoginBtn">Entrar com o Google</button>
-        <p>Não tem conta? <a href="#" id="criarContaBtn">Criar conta</a></p>
-        <button id="closeLoginBtn">Fechar</button>
+        <button id="googleLoginBtn" class="bg-blue-600 text-white">Entrar com o Google</button>
+        <p class="mt-4">Não tem conta? <a href="#" id="criarContaBtn" class="text-blue-500 hover:underline">Criar conta</a></p>
+        <button id="closeLoginBtn" class="mt-4 bg-gray-500">Fechar</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -117,26 +133,19 @@
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
     <script>
-        //---------------------------------------------------------
-        // 1. COLE A SUA CONFIGURAÇÃO DO FIREBASE AQUI
-        //---------------------------------------------------------
-       const firebaseConfig = {
-  apiKey: "AIzaSyBEE7xSDBPfhEPDMSa_uVLqh9Il-IZ2MyE",
-  authDomain: "testelogin-f1b9a.firebaseapp.com",
-  projectId: "testelogin-f1b9a",
-  storageBucket: "testelogin-f1b9a.firebasestorage.app",
-  messagingSenderId: "969681313751",
-  appId: "1:969681313751:web:5929af3f9fb923eb737592"
-};
-      
-        // Inicializa o Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBEE7xSDBPfhEPDMSa_uVLqh9Il-IZ2MyE",
+            authDomain: "testelogin-f1b9a.firebaseapp.com",
+            projectId: "testelogin-f1b9a",
+            storageBucket: "testelogin-f1b9a.firebasestorage.app",
+            messagingSenderId: "969681313751",
+            appId: "1:969681313751:web:5929af3f9fb923eb737592"
+        };
+        
         const app = firebase.initializeApp(firebaseConfig);
         const auth = app.auth();
         const db = app.firestore();
 
-        //---------------------------------------------------------
-        // 2. REFERÊNCIAS E CONFIGURAÇÃO
-        //---------------------------------------------------------
         const authButtonsContainer = document.getElementById('auth-buttons-container');
         const loginFormContainer = document.getElementById('login-form-container');
         const loginForm = document.getElementById('loginForm');
@@ -148,22 +157,19 @@
         const iframe = document.getElementById('app-iframe');
         const menuButtonsContainer = document.getElementById('menu-buttons-container');
 
-        // Mapeamento de botões e URLs (ADICIONE AQUI AS SUAS URLS)
         const allButtons = [
-            { id: 'btn-diluicao', text: 'Calculadora de Diluição', url: 'diluicao_31.0_index.html.html', roles: ['public', 'basico', 'pleno', 'admin'] },
-            { id: 'btn-custo', text: 'Custo por Paciente', url: 'custo por paciente 10.0 index.html', roles: ['public', 'basico', 'pleno', 'admin'] },
-            { id: 'btn-rastreabilidade', text: 'Rastreabilidade', url: 'Rastreabilidade teste web 26.0 index.html', roles: ['pleno', 'admin'] },
-            { id: 'btn-suprimentos', text: 'Análise de Estoque', url: 'Suprimentos 10.0 index.html', roles: ['pleno', 'admin'] },
-            { id: 'btn-ocs', text: 'Controle de OCs', url: 'ordens_de_compra 22.0 index.html', roles: ['admin'] },
-            { id: 'btn-emprestimo', text: 'Termo de Empréstimo', url: 'Termo de empréstimo 4.0 index.html', roles: ['admin'] },
+            { id: 'btn-atendimento', text: 'Atendimento', url: 'diluicao_31.0_index.html.html', roles: ['public', 'basico', 'pleno', 'admin'] },
+            { id: 'btn-relatorios', text: 'Relatórios', url: 'Rastreabilidade teste web 26.0 index.html', roles: ['public', 'basico', 'pleno', 'admin'] },
+            { id: 'btn-noticias', text: 'Portal de Notícias', url: 'portal_noticias.html', roles: ['public', 'basico', 'pleno', 'admin'] },
+            { id: 'btn-cadastros', text: 'Cadastros', url: 'custo por paciente 10.0 index.html', roles: ['basico', 'pleno', 'admin'] },
+            { id: 'btn-sistema', text: 'Sistema', url: 'Suprimentos 10.0 index.html', roles: ['admin'] },
+            { id: 'btn-ocs', text: 'Controle de OCs', url: 'ordens_de_compra 22.0 index.html', roles: ['pleno', 'admin'] },
+            { id: 'btn-emprestimo', text: 'Termo de Empréstimo', url: 'Termo de empréstimo 4.0 index.html', roles: ['pleno', 'admin'] },
             { id: 'btn-prescricao', text: 'Custo por Préscrição', url: 'analise-de-prescricao-medico-9.0-index.html', roles: ['admin'] }
         ];
 
         let activeAppUrl = '';
 
-        //---------------------------------------------------------
-        // 3. FUNÇÕES PARA LÓGICA DO LOGIN E EXIBIÇÃO
-        //---------------------------------------------------------
         function showLoginModal() {
             loginFormContainer.style.display = 'block';
         }
@@ -183,85 +189,88 @@
             }
         }
 
-        function renderMenuButtons(userRole) {
-            menuButtonsContainer.innerHTML = ''; // Limpa os botões existentes
-            const buttonsToShow = allButtons.filter(button => button.roles.includes(userRole) || button.roles.includes('public'));
+        async function renderMenuButtons(userRole) {
+            menuButtonsContainer.innerHTML = '';
+            
+            const buttonsToShow = allButtons.filter(button => button.roles.includes('public') || button.roles.includes(userRole));
 
             buttonsToShow.forEach(button => {
-                const btnElement = document.createElement('button');
+                const btnElement = document.createElement('div');
                 btnElement.id = button.id;
+                btnElement.classList.add('menu-item');
                 btnElement.textContent = button.text;
-                btnElement.onclick = () => loadApp(button.url, btnElement);
+                
+                btnElement.onclick = (e) => {
+                    e.preventDefault();
+                    loadApp(button.url, btnElement);
+                };
                 menuButtonsContainer.appendChild(btnElement);
             });
-
-            // Carrega o primeiro aplicativo disponível para o usuário
-            if (buttonsToShow.length > 0) {
-                const firstButton = document.getElementById(buttonsToShow[0].id);
-                loadApp(buttonsToShow[0].url, firstButton);
-            }
         }
 
         function loadApp(appFile, button) {
             iframe.src = appFile;
             activeAppUrl = appFile;
-            const buttons = document.querySelectorAll('.menu-buttons button');
+            const buttons = document.querySelectorAll('.menu-buttons-top .menu-item');
             buttons.forEach(btn => btn.classList.remove('active'));
             if (button) {
                 button.classList.add('active');
             }
         }
 
-        // Monitora o estado de autenticação
+        // Renderiza os botões públicos imediatamente ao carregar a página
+        renderMenuButtons('public');
+
         auth.onAuthStateChanged(user => {
             renderAuthButtons(user);
             if (user) {
+                db.collection('users').doc(user.uid).get()
+                    .then(doc => {
+                        const userRole = doc.exists ? doc.data().role : 'public';
+                        renderMenuButtons(userRole);
+                    })
+                    .catch(error => {
+                        console.error("Erro ao buscar função do usuário:", error);
+                        renderMenuButtons('public');
+                    });
                 hideLoginModal();
-                db.collection('users').doc(user.uid).get().then(doc => {
-                    const userRole = doc.exists ? doc.data().role : 'public';
-                    renderMenuButtons(userRole);
-                    if (userRole === 'public') {
-                        // Caso a conta não exista no Firestore, mostra apenas o conteúdo público
-                        console.log("Usuário logado, mas sem função no Firestore. Acesso público.");
-                        loadApp('diluicao_31.0_index.html.html', document.getElementById('btn-diluicao'));
-                    }
-                }).catch(error => {
-                    console.error("Erro ao buscar função do usuário:", error);
-                    renderMenuButtons('public');
-                });
-            } else {
-                renderMenuButtons('public'); // Mostra apenas os botões públicos para quem não está logado
             }
         });
 
-        // Eventos de login e registro
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const email = emailInput.value;
             const senha = senhaInput.value;
-            auth.signInWithEmailAndPassword(email, senha)
-                .catch(error => alert('Erro no login: ' + error.message));
+            try {
+                await auth.signInWithEmailAndPassword(email, senha);
+            } catch (error) {
+                alert('Erro no login: ' + error.message);
+            }
         });
 
-        googleLoginBtn.addEventListener('click', () => {
+        googleLoginBtn.addEventListener('click', async () => {
             const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .catch(error => alert('Erro no login com o Google: ' + error.message));
+            try {
+                await auth.signInWithPopup(provider);
+            } catch (error) {
+                alert('Erro no login com o Google: ' + error.message);
+            }
         });
 
-        criarContaBtn.addEventListener('click', () => {
+        criarContaBtn.addEventListener('click', async () => {
             const email = prompt("E-mail para registro:");
             const senha = prompt("Senha (mínimo 6 caracteres):");
             if (email && senha) {
-                auth.createUserWithEmailAndPassword(email, senha)
-                    .then(cred => {
-                        return db.collection('users').doc(cred.user.uid).set({
-                            email: cred.user.email,
-                            role: 'basico'
-                        });
-                    })
-                    .then(() => alert("Conta criada!"))
-                    .catch(error => alert("Erro ao criar: " + error.message));
+                try {
+                    const cred = await auth.createUserWithEmailAndPassword(email, senha);
+                    await db.collection('users').doc(cred.user.uid).set({
+                        email: cred.user.email,
+                        role: 'basico'
+                    });
+                    alert("Conta criada!");
+                } catch (error) {
+                    alert("Erro ao criar: " + error.message);
+                }
             }
         });
 
