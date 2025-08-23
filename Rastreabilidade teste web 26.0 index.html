@@ -31,7 +31,7 @@
             padding: 30px;
             border-radius: 8px;
             box-shadow: var(--shadow);
-            width: 100%;
+            width: 100%; /* Garante que ocupe a largura total */
             max-width: 700px;
             box-sizing: border-box;
             margin-bottom: 20px;
@@ -147,6 +147,25 @@
                 background-color: #f2f2f2;
             }
         }
+
+        /* --- COMANDOS PARA TORNAR A PÁGINA RESPONSIVA --- */
+        @media (max-width: 600px) {
+            body {
+                padding: 10px; /* Reduz o padding geral em telas pequenas */
+            }
+
+            .container {
+                padding: 20px; /* Reduz o padding interno do container */
+            }
+
+            .button-group {
+                flex-direction: column; /* Empilha os botões verticalmente */
+            }
+            
+            button {
+                width: 100%; /* Faz os botões ocuparem a largura total */
+            }
+        }
     </style>
 </head>
 <body>
@@ -190,10 +209,10 @@
                     <option value="" disabled selected>Selecione o setor</option>
                     <option value="emergencia">EMERGÊNCIA</option>
                     <option value="observacaof">OBSERVAÇÃO FEMININO</option>
-                    <option value="observacaom">OBSERVAÇÃO MASCULINOooo</option>
+                    <option value="observacaom">OBSERVAÇÃO MASCULINO</option>
                     <option value="pediatria">PEDIATRIA</option>
-	            <option value="respiratorio">RESPIRATÓRIO</option>
-	            <option value="psiquiatria">PSIQUIATRIA</option>
+                    <option value="respiratorio">RESPIRATÓRIO</option>
+                    <option value="psiquiatria">PSIQUIATRIA</option>
                     <option value="sutura">PROCEDIMENTO</option>
                     <option value="medicacao">MEDICAÇÃO</option>
                     <option value="triagem">TRIAGEM</option>
@@ -227,7 +246,6 @@
 
             let medicationDatabase = {};
             
-            // Nova função para formatar a data
             function formatDate(isoDateString) {
                 if (!isoDateString) return '';
                 const date = new Date(isoDateString);
@@ -285,7 +303,6 @@
                 if (data) {
                     medicationInput.value = data.MEDICAMENTO || '';
                     lotInput.value = data.LOTE || '';
-                    // Usa a nova função para formatar a data antes de preencher o campo
                     validityInput.value = formatDate(data.VALIDADE) || '';
                 } else {
                     medicationInput.value = '';
@@ -352,4 +369,5 @@
         });
     </script>
 </body>
+
 </html>
