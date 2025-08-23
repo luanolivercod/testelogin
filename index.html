@@ -61,6 +61,7 @@
             transition: background-color 0.3s;
             cursor: pointer;
             text-align: center;
+            white-space: nowrap; /* Impede quebras de linha em textos longos */
         }
         .menu-item:hover {
             background-color: #2f855a;
@@ -110,6 +111,50 @@
             background-color: #066b30;
             color: white;
             cursor: pointer;
+        }
+
+        /* --- MEDIA QUERIES PARA RESPONSIVIDADE EM CELULARES --- */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 104px; /* Ajusta o padding para telas menores */
+            }
+
+            .main-header {
+                flex-direction: column;
+                height: auto;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .main-header h1 {
+                font-size: 1.5rem; /* Reduz o tamanho do título */
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+            .main-header .flex {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .user-info {
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+            .auth-buttons {
+                margin-top: 0.5rem;
+            }
+
+            .menu-buttons-top {
+                top: 80px;
+                flex-wrap: wrap; /* Permite que os botões quebrem a linha */
+                justify-content: center; /* Centraliza os botões */
+                height: auto;
+            }
+            .menu-item {
+                flex-grow: 1; /* Permite que os botões ocupem o espaço disponível */
+            }
+            .app-container {
+                height: calc(100vh - 104px);
+            }
         }
     </style>
 </head>
@@ -193,9 +238,8 @@
             datetimeDisplay.textContent = `${dateString} - ${timeString}`;
         }
 
-        // Atualiza a data e hora a cada segundo
         setInterval(updateDateTime, 1000);
-        updateDateTime(); // Chama a função na inicialização para evitar atraso
+        updateDateTime();
 
         function showLoginModal() {
             loginFormContainer.style.display = 'block';
@@ -245,13 +289,11 @@
             }
         }
 
-        // Renderiza os botões públicos imediatamente ao carregar a página
         renderMenuButtons('public');
 
         auth.onAuthStateChanged(user => {
             renderAuthButtons(user);
             if (user) {
-                // Exibe o e-mail do usuário logado
                 emailDisplay.textContent = user.email;
 
                 db.collection('users').doc(user.uid).get()
@@ -265,7 +307,6 @@
                     });
                 hideLoginModal();
             } else {
-                // Limpa o e-mail quando o usuário faz logout
                 emailDisplay.textContent = '';
                 renderMenuButtons('public');
             }
