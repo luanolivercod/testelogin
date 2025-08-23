@@ -10,7 +10,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #f0f4f8;
             margin: 0;
-            padding-top: 136px; /* Adiciona espaço no topo para o cabeçalho e menu */
+            padding-top: 136px;
         }
 
         .main-header {
@@ -29,16 +29,24 @@
             z-index: 20;
         }
 
+        .user-info {
+            text-align: right;
+            font-size: 0.875rem;
+        }
+        .user-info .email {
+            font-weight: bold;
+        }
+
         .menu-buttons-top {
             display: flex;
-            justify-content: flex-start; /* Alinha os botões à esquerda */
+            justify-content: flex-start;
             align-items: center;
             gap: 1rem;
             background-color: #fff;
             padding: 1rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             position: fixed;
-            top: 80px; /* Posiciona o menu abaixo do cabeçalho */
+            top: 80px;
             left: 0;
             right: 0;
             z-index: 10;
@@ -68,7 +76,7 @@
         
         .app-container {
             width: 100%;
-            height: calc(100vh - 136px); /* Ajusta a altura para o espaço restante */
+            height: calc(100vh - 136px);
             border: none;
             background-color: #fff;
             padding: 1rem;
@@ -109,7 +117,13 @@
 
     <header class="main-header">
         <h1 class="text-3xl font-bold">Portal de Ferramentas Farmacêuticas</h1>
-        <div class="auth-buttons" id="auth-buttons-container">
+        <div class="flex items-center gap-4">
+            <div class="user-info">
+                <div id="datetime-display"></div>
+                <div id="email-display" class="email"></div>
+            </div>
+            <div class="auth-buttons" id="auth-buttons-container">
+            </div>
         </div>
     </header>
 
@@ -156,6 +170,8 @@
         const closeLoginBtn = document.getElementById('closeLoginBtn');
         const iframe = document.getElementById('app-iframe');
         const menuButtonsContainer = document.getElementById('menu-buttons-container');
+        const datetimeDisplay = document.getElementById('datetime-display');
+        const emailDisplay = document.getElementById('email-display');
 
         const allButtons = [
             { id: 'btn-atendimento', text: 'Atendimento', url: 'diluicao_31.0_index.html.html', roles: ['public', 'basico', 'pleno', 'admin'] },
@@ -169,6 +185,17 @@
         ];
 
         let activeAppUrl = '';
+
+        function updateDateTime() {
+            const now = new Date();
+            const dateString = now.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+            const timeString = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            datetimeDisplay.textContent = `${dateString} - ${timeString}`;
+        }
+
+        // Atualiza a data e hora a cada segundo
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // Chama a função na inicialização para evitar atraso
 
         function showLoginModal() {
             loginFormContainer.style.display = 'block';
@@ -224,6 +251,9 @@
         auth.onAuthStateChanged(user => {
             renderAuthButtons(user);
             if (user) {
+                // Exibe o e-mail do usuário logado
+                emailDisplay.textContent = user.email;
+
                 db.collection('users').doc(user.uid).get()
                     .then(doc => {
                         const userRole = doc.exists ? doc.data().role : 'public';
@@ -234,6 +264,10 @@
                         renderMenuButtons('public');
                     });
                 hideLoginModal();
+            } else {
+                // Limpa o e-mail quando o usuário faz logout
+                emailDisplay.textContent = '';
+                renderMenuButtons('public');
             }
         });
 
