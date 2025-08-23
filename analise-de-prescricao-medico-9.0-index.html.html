@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Custo e Comparação - Completa</title>
+
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --primary-dark: #0056b3;
+            --secondary-color: #6c757d;
+            --secondary-dark: #5a6268;
+            --light-bg: #f8f9fa;
+            --dark-bg: #e9ecef;
+            --text-color: #343a40;
+            --border-color: #dee2e6;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--light-bg);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 50px 20px;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px var(--shadow-color);
+            width: 95%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+        }
+
+        .section-header {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--secondary-color);
+        }
+
+        .input-section, .filter-section, .comparison-section {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .file-input-group, .filter-group, .comparison-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 5px;
+        }
+
+        label {
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        input[type="file"], input[type="date"], select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+            width: 220px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease, transform 0.2s;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn.secondary {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn.secondary:hover {
+            background-color: var(--secondary-dark);
+        }
+
+        .results-container {
+            text-align: left;
+            margin-top: 40px;
+        }
+        
+        .results-container h3, .results-container p {
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .table-container {
+            margin-bottom: 40px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background-color: #fff;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--dark-bg);
+            font-weight: bold;
+        }
+
+        tr:nth-child(even) {
+            background-color: var(--light-bg);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Análise de Custos de Prescrição</h1>
+        
+        <h3 class="section-header">1. Carregar Planilha</h3>
+        <div class="input-section">
+            <div class="file-input-group">
+                <label for="fileInputPrescricao">Planilha de Prescrições e Custos:</label>
+                <input type="file" id="fileInputPrescricao" accept=".xlsx, .xls">
+            </div>
+            <button id="analyzeBtn" class="btn">Analisar Planilha</button>
+        </div>
+
+        <div id="filterSection" style="display:none;">
+            <h3 class="section-header">2. Filtros para Análise</h3>
+            <div class="filter-section">
+                <div class="filter-group">
+                    <label for="startDate">Data Início:</label>
+                    <input type="date" id="startDate">
+                </div>
+                <div class="filter-group">
+                    <label for="endDate">Data Fim:</label>
+                    <input type="date" id="endDate">
+                </div>
+                <div class="filter-group">
+                    <label for="profissionalFilter">Profissional:</label>
+                    <select id="profissionalFilter"></select>
+                </div>
+                <div class="filter-group">
+                    <label for="pacienteFilter">Paciente:</label>
+                    <select id="pacienteFilter"></select>
+                </div>
+                <button id="applyFiltersBtn" class="btn secondary">Aplicar Filtros</button>
+            </div>
+        </div>
+
+        <div id="results" class="results-container" style="display:none;">
+            <h3 class="section-header">3. Análise de Prescrições</h3>
+            <div id="summary"></div>
+            <div class="table-container">
+                <div id="mainAnalysisTable"></div>
+            </div>
+
+            <h3 class="section-header">4. Comparar Profissionais</h3>
+            <div class="comparison-section">
+                <div class="comparison-group">
+                    <label for="profissionalA">Profissional 1:</label>
+                    <select id="profissionalA"></select>
+                </div>
+                <div class="comparison-group">
+                    <label for="profissionalB">Profissional 2:</label>
+                    <select id="profissionalB"></select>
+                </div>
+                <button id="compareBtn" class="btn secondary">Comparar</button>
+            </div>
+            <div class="table-container">
+                <div id="comparisonResults"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const fileInputPrescricao = document.getElementById('fileInputPrescricao');
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const filterSection = document.getElementById('filterSection');
+            const resultsDiv = document.getElementById('results');
+            const profissionalFilter = document.getElementById('profissionalFilter');
+            const pacienteFilter = document.getElementById('pacienteFilter');
+            const startDateInput = document.getElementById('startDate');
+            const endDateInput = document.getElementById('endDate');
+            const applyFiltersBtn = document.getElementById('applyFiltersBtn');
+            const mainAnalysisTableDiv = document.getElementById('mainAnalysisTable');
+            const profissionalA = document.getElementById('profissionalA');
+            const profissionalB = document.getElementById('profissionalB');
+            const compareBtn = document.getElementById('compareBtn');
+            const comparisonResultsDiv = document.getElementById('comparisonResults');
+
+            let prescricaoData = [];
+            
+            // Mapeamento CORRETO das colunas conforme sua planilha
+            const colData = "Data";
+            const colProfissional = "Item"; // O nome do profissional na 3ª coluna
+            const colMedicamento = "Item_1"; // O nome do item de prescrição na 4ª coluna, renomeado para "Item_1"
+            const colPaciente = "Usuário";
+            const colQuantidade = "Qtd.";
+            const colValorTotal = "Valor Total R$";
+            const colValorUnitario = "Valor Unitário ";
+
+            // Função para formatar valores em moeda BRL
+            function formatCurrency(value) {
+                if (typeof value !== 'number') return 'R$ 0,00';
+                return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            }
+            
+            // Função para converter data no formato DD/MM/YYYY
+            function parseDate(dateString) {
+                if (!dateString) return null;
+                const parts = String(dateString).trim().split('/');
+                if (parts.length === 3) {
+                    const day = parseInt(parts[0], 10);
+                    const month = parseInt(parts[1], 10) - 1; // Mês é baseado em 0
+                    const year = parseInt(parts[2], 10);
+                    return new Date(year, month, day);
+                }
+                return null;
+            }
+            
+            // Função para converter string para float, tratando o separador de milhar e decimal
+            function parseBRLValue(value) {
+                if (typeof value === 'number') return value;
+                if (!value) return 0;
+                // Remove separador de milhar (ponto) e substitui a vírgula por ponto decimal
+                const cleanValue = String(value).replace(/\./g, '').replace(',', '.');
+                return parseFloat(cleanValue) || 0;
+            }
+
+            // Função para normalizar strings (remover aspas e espaços extras)
+            function normalizeString(str) {
+                if (typeof str !== 'string') return '';
+                return str.replace(/^"|"$/g, '').trim();
+            }
+
+            // Função principal para ler a planilha
+            analyzeBtn.addEventListener('click', async () => {
+                const prescricaoFile = fileInputPrescricao.files[0];
+
+                if (!prescricaoFile) {
+                    alert("Por favor, selecione a planilha de prescrições e custos.");
+                    return;
+                }
+
+                try {
+                    const workbook = await readExcelFile(prescricaoFile);
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    prescricaoData = XLSX.utils.sheet_to_json(worksheet, {raw: false});
+
+                    if (!prescricaoData || prescricaoData.length === 0) {
+                        alert("Erro ao ler a planilha ou ela está vazia. Verifique o formato e o conteúdo.");
+                        return;
+                    }
+                    
+                    // Verifica se as colunas necessárias existem
+                    const firstRow = prescricaoData[0];
+                    const requiredCols = [colData, colPaciente, colQuantidade, colValorTotal, colMedicamento, colProfissional];
+                    for (const col of requiredCols) {
+                        if (!firstRow.hasOwnProperty(col)) {
+                            alert(`A planilha não contém a coluna '${col}'. Verifique se o arquivo está correto e se foi exportado sem alterar os nomes das colunas. As colunas esperadas são: ${requiredCols.join(", ")}`);
+                            return;
+                        }
+                    }
+
+                    populateFilters(prescricaoData);
+                    applyFilters();
+
+                    filterSection.style.display = 'flex';
+                    resultsDiv.style.display = 'block';
+
+                } catch (error) {
+                    console.error("Ocorreu um erro durante a análise:", error);
+                    alert("Ocorreu um erro durante a análise. Verifique se a planilha está correta e se os nomes das colunas estão corretos. O erro foi: " + error.message);
+                }
+            });
+
+            // Função para popular os filtros
+            function populateFilters(data) {
+                const profissionais = [...new Set(data.map(row => normalizeString(row[colProfissional])).filter(Boolean))].sort();
+                const pacientes = [...new Set(data.map(row => normalizeString(row[colPaciente])).filter(Boolean))].sort();
+                
+                profissionalFilter.innerHTML = '<option value="">Todos os Profissionais</option>';
+                pacienteFilter.innerHTML = '<option value="">Todos os Pacientes</option>';
+                profissionalA.innerHTML = '<option value="">Selecione...</option>';
+                profissionalB.innerHTML = '<option value="">Selecione...</option>';
+
+                profissionais.forEach(prof => {
+                    const option = document.createElement('option');
+                    option.value = prof;
+                    option.textContent = prof;
+                    profissionalFilter.appendChild(option);
+                    profissionalA.appendChild(option.cloneNode(true));
+                    profissionalB.appendChild(option.cloneNode(true));
+                });
+
+                pacientes.forEach(paciente => {
+                    const option = document.createElement('option');
+                    option.value = paciente;
+                    option.textContent = paciente;
+                    pacienteFilter.appendChild(option);
+                });
+            }
+
+            // Função para aplicar os filtros e refazer a análise
+            applyFiltersBtn.addEventListener('click', applyFilters);
+
+            function applyFilters() {
+                let filteredData = prescricaoData;
+                
+                // Filtro de data
+                const startDate = startDateInput.value ? new Date(startDateInput.value + 'T00:00:00') : null;
+                const endDate = endDateInput.value ? new Date(endDateInput.value + 'T23:59:59') : null;
+                
+                if (startDate && endDate && startDate > endDate) {
+                    alert("A data de início não pode ser posterior à data de fim.");
+                    return;
+                }
+                
+                if (startDate || endDate) {
+                    filteredData = filteredData.filter(row => {
+                        const rowDate = parseDate(row[colData]);
+                        if (!rowDate || isNaN(rowDate.getTime())) return false;
+                        const isAfterStart = !startDate || rowDate >= startDate;
+                        const isBeforeEnd = !endDate || rowDate <= endDate;
+                        return isAfterStart && isBeforeEnd;
+                    });
+                }
+
+                // Filtro de profissional
+                const selectedProfissional = profissionalFilter.value;
+                if (selectedProfissional) {
+                    filteredData = filteredData.filter(row => normalizeString(row[colProfissional]) === selectedProfissional);
+                }
+
+                // Filtro de paciente
+                const selectedPaciente = pacienteFilter.value;
+                if (selectedPaciente) {
+                    filteredData = filteredData.filter(row => normalizeString(row[colPaciente]) === selectedPaciente);
+                }
+
+                // Lógica de análise principal
+                const profCostSummary = {};
+                let totalPrescriptionCost = 0;
+
+                filteredData.forEach(row => {
+                    const profissional = normalizeString(row[colProfissional]);
+                    const custoTotalItem = parseBRLValue(row[colValorTotal]);
+                    
+                    if (profissional && custoTotalItem > 0) {
+                        totalPrescriptionCost += custoTotalItem;
+                        profCostSummary[profissional] = (profCostSummary[profissional] || 0) + custoTotalItem;
+                    }
+                });
+
+                performABCAnalysis(profCostSummary, totalPrescriptionCost);
+            }
+            
+            // Função para realizar e exibir a Curva ABC
+            function performABCAnalysis(profCostSummary, totalCost) {
+                const sortedProfs = Object.entries(profCostSummary).sort(([, a], [, b]) => b - a);
+                
+                let cumulativeCost = 0;
+                let tableHtml = `
+                    <h3>Análise de Curva ABC</h3>
+                    <p>Custo Total Analisado: <strong>${formatCurrency(totalCost)}</strong></p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Profissional</th>
+                                <th>Custo Total</th>
+                                <th>% do Total</th>
+                                <th>% Acumulada</th>
+                                <th>Classe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                sortedProfs.forEach(([prof, custo]) => {
+                    cumulativeCost += custo;
+                    const percentOfTotal = (custo / totalCost) * 100;
+                    const cumulativePercent = (cumulativeCost / totalCost) * 100;
+                    let classe = '';
+                    if (cumulativePercent <= 80) {
+                        classe = 'A';
+                    } else if (cumulativePercent <= 95) {
+                        classe = 'B';
+                    } else {
+                        classe = 'C';
+                    }
+                    
+                    tableHtml += `
+                        <tr>
+                            <td>${prof}</td>
+                            <td>${formatCurrency(custo)}</td>
+                            <td>${percentOfTotal.toFixed(2).replace('.', ',')}%</td>
+                            <td>${cumulativePercent.toFixed(2).replace('.', ',')}%</td>
+                            <td>${classe}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHtml += `</tbody></table>`;
+                mainAnalysisTableDiv.innerHTML = tableHtml;
+            }
+
+            // Lógica de comparação
+            compareBtn.addEventListener('click', () => {
+                const prof1 = profissionalA.value;
+                const prof2 = profissionalB.value;
+
+                if (!prof1 || !prof2 || prof1 === prof2) {
+                    alert("Selecione dois profissionais diferentes para comparar.");
+                    return;
+                }
+
+                const prof1Data = prescricaoData.filter(row => normalizeString(row[colProfissional]) === prof1);
+                const prof2Data = prescricaoData.filter(row => normalizeString(row[colProfissional]) === prof2);
+
+                const prof1Stats = calculateStats(prof1Data);
+                const prof2Stats = calculateStats(prof2Data);
+
+                displayComparison(prof1, stats1, prof2, stats2);
+            });
+
+            // Função para calcular estatísticas de um profissional
+            function calculateStats(data) {
+                let totalCost = 0;
+                let totalQuantity = 0;
+                const uniqueMedicamentos = new Set();
+                
+                data.forEach(row => {
+                    const medicamento = normalizeString(row[colMedicamento]);
+                    const quantidade = parseInt(row[colQuantidade], 10);
+                    const valorTotal = parseBRLValue(row[colValorTotal]);
+                    
+                    if (medicamento && !isNaN(quantidade) && !isNaN(valorTotal)) {
+                        totalCost += valorTotal;
+                        totalQuantity += quantidade;
+                        uniqueMedicamentos.add(medicamento);
+                    }
+                });
+
+                return {
+                    totalCost: totalCost,
+                    totalQuantity: totalQuantity,
+                    uniqueMedicamentosCount: uniqueMedicamentos.size
+                };
+            }
+
+            // Função para exibir a comparação
+            function displayComparison(prof1, stats1, prof2, stats2) {
+                const tableHtml = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Métrica</th>
+                                <th>${prof1}</th>
+                                <th>${prof2}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Custo Total de Prescrição</td>
+                                <td>${formatCurrency(stats1.totalCost)}</td>
+                                <td>${formatCurrency(stats2.totalCost)}</td>
+                            </tr>
+                            <tr>
+                                <td>Quantidade Total Prescrita</td>
+                                <td>${stats1.totalQuantity}</td>
+                                <td>${stats2.totalQuantity}</td>
+                            </tr>
+                            <tr>
+                                <td>Nº de Medicamentos Únicos</td>
+                                <td>${stats1.uniqueMedicamentosCount}</td>
+                                <td>${stats2.uniqueMedicamentosCount}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+                comparisonResultsDiv.innerHTML = tableHtml;
+            }
+
+            // Função genérica para ler arquivos Excel
+            function readExcelFile(file) {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        try {
+                            const data = new Uint8Array(event.target.result);
+                            const workbook = XLSX.read(data, { type: 'array' });
+                            resolve(workbook);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    };
+                    reader.onerror = (error) => reject(error);
+                    reader.readAsArrayBuffer(file);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

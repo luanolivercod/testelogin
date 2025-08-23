@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rastreabilidade de Medicamentos Multidose</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #4caf50;
+            --text-color: #333;
+            --background-color: #f4f4f4;
+            --white-color: #fff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --danger-color: #d9534f;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            background-color: var(--white-color);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            width: 100%;
+            max-width: 700px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            margin-top: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: flex-end;
+        }
+        
+        .admin-button-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            align-items: center;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            color: var(--white-color);
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        button.primary {
+            background-color: var(--primary-color);
+        }
+
+        button.primary:hover {
+            background-color: #1b5e20;
+        }
+        
+        button.secondary {
+            background-color: #555;
+        }
+
+        button.secondary:hover {
+            background-color: #333;
+        }
+        
+        #message {
+            text-align: center;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .printable-area, .printable-area * {
+                visibility: visible;
+            }
+            .printable-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                font-family: Arial, sans-serif;
+            }
+            .printable-area h1 {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .printable-area table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            .printable-area th, .printable-area td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+            .printable-area th {
+                background-color: #f2f2f2;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Rastreabilidade de Medicamentos Multidose</h1>
+
+        <form id="drug-form">
+            <div class="form-group">
+                <label for="bottle-code">Código do Frasco:</label>
+                <input type="text" id="bottle-code" required>
+            </div>
+            <div class="form-group">
+                <label for="patient-record">Prontuário do Paciente:</label>
+                <input type="text" id="patient-record" required>
+            </div>
+            <div class="form-group">
+                <label for="medication">Medicamento:</label>
+                <input type="text" id="medication">
+            </div>
+            <div class="form-group">
+                <label for="lot">Lote:</label>
+                <input type="text" id="lot">
+            </div>
+            <div class="form-group">
+                <label for="validity">Validade:</label>
+                <input type="text" id="validity">
+            </div>
+            <div class="form-group">
+                <label for="dose">Dose:</label>
+                <input type="text" id="dose" required>
+            </div>
+            <div class="form-group">
+                <label for="professional">Profissional:</label>
+                <input type="text" id="professional" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="sector">Setor:</label>
+                <select id="sector" required>
+                    <option value="" disabled selected>Selecione o setor</option>
+                    <option value="emergencia">EMERGÊNCIA</option>
+                    <option value="observacaof">OBSERVAÇÃO FEMININO</option>
+                    <option value="observacaom">OBSERVAÇÃO MASCULINOooo</option>
+                    <option value="pediatria">PEDIATRIA</option>
+	            <option value="respiratorio">RESPIRATÓRIO</option>
+	            <option value="psiquiatria">PSIQUIATRIA</option>
+                    <option value="sutura">PROCEDIMENTO</option>
+                    <option value="medicacao">MEDICAÇÃO</option>
+                    <option value="triagem">TRIAGEM</option>
+                </select>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" id="save-btn" class="primary">Salvar Dados</button>
+                <button type="button" id="print-btn" class="secondary">Imprimir Planilha</button>
+            </div>
+        </form>
+        
+        <p id="message"></p>
+    </div>
+
+    <script>
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwdnemnPHDehRkuGemldalVxsF5zMGMUYQrp-hu8SNragqqrq09yHNp_9uT4nnZniz/exec';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('drug-form');
+            const bottleCodeInput = document.getElementById('bottle-code');
+            const patientRecordInput = document.getElementById('patient-record');
+            const medicationInput = document.getElementById('medication');
+            const lotInput = document.getElementById('lot');
+            const validityInput = document.getElementById('validity');
+            const doseInput = document.getElementById('dose');
+            const professionalInput = document.getElementById('professional');
+            const saveBtn = document.getElementById('save-btn');
+            const message = document.getElementById('message');
+            const sectorInput = document.getElementById('sector');
+
+            let medicationDatabase = {};
+            
+            // Nova função para formatar a data
+            function formatDate(isoDateString) {
+                if (!isoDateString) return '';
+                const date = new Date(isoDateString);
+                const day = String(date.getDate()).padStart(2, '0');
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
+            const loadMedicationDatabase = () => {
+                message.textContent = 'Carregando lista de medicamentos da nuvem...';
+                fetch(`${GOOGLE_APPS_SCRIPT_URL}?action=load`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Falha na resposta da rede: ' + response.statusText);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.error) {
+                            message.textContent = 'Erro ao carregar a planilha de medicamentos: ' + data.error;
+                            console.error('Erro ao carregar:', data.error);
+                            return;
+                        }
+                        
+                        medicationDatabase = {};
+                        data.forEach(row => {
+                            const codigoKey = Object.keys(row).find(key => key.toUpperCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === "CODIGO");
+                            
+                            if (codigoKey) {
+                                const codigo = row[codigoKey];
+                                const medicamentoKey = Object.keys(row).find(key => key.toUpperCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === "MEDICAMENTO");
+                                const loteKey = Object.keys(row).find(key => key.toUpperCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === "LOTE");
+                                const validadeKey = Object.keys(row).find(key => key.toUpperCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "") === "VALIDADE");
+                                
+                                medicationDatabase[codigo.toString().toUpperCase().trim()] = {
+                                    "MEDICAMENTO": row[medicamentoKey] || '',
+                                    "LOTE": row[loteKey] || '',
+                                    "VALIDADE": row[validadeKey] || ''
+                                };
+                            }
+                        });
+                        message.textContent = 'Planilha de medicamentos carregada com sucesso!';
+                        setTimeout(() => message.textContent = '', 5000);
+                    })
+                    .catch(error => {
+                        message.textContent = 'Erro de conexão ao carregar a lista de medicamentos. Verifique a URL do Apps Script.';
+                        console.error('Erro:', error);
+                    });
+            };
+
+            bottleCodeInput.addEventListener('input', () => {
+                const code = bottleCodeInput.value.toUpperCase().trim();
+                const data = medicationDatabase[code];
+                if (data) {
+                    medicationInput.value = data.MEDICAMENTO || '';
+                    lotInput.value = data.LOTE || '';
+                    // Usa a nova função para formatar a data antes de preencher o campo
+                    validityInput.value = formatDate(data.VALIDADE) || '';
+                } else {
+                    medicationInput.value = '';
+                    lotInput.value = '';
+                    validityInput.value = '';
+                }
+            });
+
+            const saveData = (event) => {
+                event.preventDefault();
+
+                if (!bottleCodeInput.value || !patientRecordInput.value || !doseInput.value || !professionalInput.value || !sectorInput.value) {
+                    message.textContent = 'Por favor, preencha todos os campos obrigatórios.';
+                    setTimeout(() => message.textContent = '', 3000);
+                    return;
+                }
+
+                const now = new Date();
+                const date = now.toLocaleDateString('pt-BR');
+                const time = now.toLocaleTimeString('pt-BR');
+
+                const record = {
+                    Data: date,
+                    Hora: time,
+                    CodFrasco: bottleCodeInput.value,
+                    Prontuario: patientRecordInput.value,
+                    Medicamento: medicationInput.value,
+                    Lote: lotInput.value,
+                    Validade: validityInput.value,
+                    Dose: doseInput.value,
+                    Profissional: professionalInput.value,
+                    Setor: sectorInput.value
+                };
+
+                saveBtn.disabled = true;
+                message.textContent = 'Salvando dados...';
+                
+                fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify(record)
+                })
+                .then(() => {
+                    message.textContent = 'Dados salvos com sucesso na planilha da nuvem!';
+                    form.reset();
+                    saveBtn.disabled = false;
+                    setTimeout(() => message.textContent = '', 3000);
+                })
+                .catch(error => {
+                    message.textContent = 'Erro ao salvar os dados. Tente novamente.';
+                    console.error('Erro:', error);
+                    saveBtn.disabled = false;
+                });
+            };
+            
+            const printSheet = () => {
+                alert('Os registros agora são salvos e gerenciados diretamente na sua planilha do Google. Por favor, imprima a planilha a partir de lá.');
+            };
+
+            form.addEventListener('submit', saveData);
+            document.getElementById('print-btn').addEventListener('click', printSheet);
+
+            loadMedicationDatabase();
+        });
+    </script>
+</body>
+</html>
