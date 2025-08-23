@@ -11,6 +11,9 @@
             background-color: #f0f4f8;
             margin: 0;
             padding-top: 136px;
+            height: 100vh; /* Define a altura total da tela */
+            display: flex; /* Adiciona flexbox para facilitar o layout */
+            flex-direction: column;
         }
 
         .main-header {
@@ -61,6 +64,7 @@
             transition: background-color 0.3s;
             cursor: pointer;
             text-align: center;
+            white-space: nowrap;
         }
         .menu-item:hover {
             background-color: #2f855a;
@@ -76,14 +80,15 @@
         
         .app-container {
             width: 100%;
-            height: calc(100vh - 136px);
+            height: calc(100vh - 136px); /* Altura dinâmica para preencher o restante da tela */
             border: none;
             background-color: #fff;
             padding: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
             margin-top: 1rem;
+            flex-grow: 1; /* Permite que o iframe cresça e ocupe o espaço restante */
         }
-
+        
         #login-form-container {
             position: absolute;
             top: 50%;
@@ -111,6 +116,50 @@
             color: white;
             cursor: pointer;
         }
+
+        /* MEDIA QUERIES PARA RESPONSIVIDADE EM CELULARES */
+        @media (max-width: 768px) {
+            body {
+                padding-top: 104px;
+            }
+
+            .main-header {
+                flex-direction: column;
+                height: auto;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+            }
+            .main-header h1 {
+                font-size: 1.5rem;
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+            .main-header .flex {
+                flex-direction: column;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .user-info {
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+            .auth-buttons {
+                margin-top: 0.5rem;
+            }
+
+            .menu-buttons-top {
+                top: 80px;
+                flex-wrap: wrap;
+                justify-content: center;
+                height: auto;
+            }
+            .menu-item {
+                flex-grow: 1;
+            }
+            .app-container {
+                height: calc(100vh - 104px);
+            }
+        }
     </style>
 </head>
 <body>
@@ -130,16 +179,20 @@
     <nav class="menu-buttons-top" id="menu-buttons-container">
         </nav>
     
+    <main class="flex-grow p-4">
+        <iframe id="app-iframe" class="app-container w-full h-full rounded-lg shadow-lg bg-white p-4"></iframe>
+    </main>
+    
     <div id="login-form-container">
         <h2>Login</h2>
         <form id="loginForm">
             <input type="email" id="email" placeholder="E-mail" required>
             <input type="password" id="senha" placeholder="Senha" required>
-            <button type="submit">Entrar</button>
+            <button type="submit" class="bg-green-600 text-white mt-4 py-2 px-4 rounded">Entrar</button>
         </form>
-        <button id="googleLoginBtn" class="bg-blue-600 text-white">Entrar com o Google</button>
+        <button id="googleLoginBtn" class="bg-blue-600 text-white mt-4 py-2 px-4 rounded">Entrar com o Google</button>
         <p class="mt-4">Não tem conta? <a href="#" id="criarContaBtn" class="text-blue-500 hover:underline">Criar conta</a></p>
-        <button id="closeLoginBtn" class="mt-4 bg-gray-500">Fechar</button>
+        <button id="closeLoginBtn" class="bg-gray-500 text-white mt-4 py-2 px-4 rounded">Fechar</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -174,11 +227,10 @@
         const emailDisplay = document.getElementById('email-display');
 
         const allButtons = [
-            { id: 'btn-atendimento', text: 'Atendimento', url: 'diluicao_31.0_index.html.html', roles: ['public', 'basico', 'pleno', 'admin'] },
-            { id: 'btn-relatorios', text: 'Relatórios', url: 'Rastreabilidade teste web 26.0 index.html', roles: ['public', 'basico', 'pleno', 'admin'] },
-            { id: 'btn-noticias', text: 'Portal de Notícias', url: 'portal_noticias.html', roles: ['public', 'basico', 'pleno', 'admin'] },
-            { id: 'btn-cadastros', text: 'Cadastros', url: 'custo por paciente 10.0 index.html', roles: ['basico', 'pleno', 'admin'] },
-            { id: 'btn-sistema', text: 'Sistema', url: 'Suprimentos 10.0 index.html', roles: ['admin'] },
+            { id: 'btn-diluicao', text: 'Calculadora de Diluição', url: 'diluicao_31.0_index.html.html', roles: ['public', 'basico', 'pleno', 'admin'] },
+            { id: 'btn-custo', text: 'Custo por Paciente', url: 'custo por paciente 10.0 index.html', roles: ['admin'] },
+            { id: 'btn-rastreabilidade', text: 'Rastreabilidade', url: 'Rastreabilidade teste web 26.0 index.html', roles: ['public', 'basico', 'pleno', 'admin'] },
+            { id: 'btn-suprimentos', text: 'Análise de Estoque', url: 'Suprimentos 10.0 index.html', roles: ['pleno', 'admin'] },
             { id: 'btn-ocs', text: 'Controle de OCs', url: 'ordens_de_compra 22.0 index.html', roles: ['pleno', 'admin'] },
             { id: 'btn-emprestimo', text: 'Termo de Empréstimo', url: 'Termo de empréstimo 4.0 index.html', roles: ['pleno', 'admin'] },
             { id: 'btn-prescricao', text: 'Custo por Préscrição', url: 'analise-de-prescricao-medico-9.0-index.html', roles: ['admin'] }
@@ -193,9 +245,8 @@
             datetimeDisplay.textContent = `${dateString} - ${timeString}`;
         }
 
-        // Atualiza a data e hora a cada segundo
         setInterval(updateDateTime, 1000);
-        updateDateTime(); // Chama a função na inicialização para evitar atraso
+        updateDateTime();
 
         function showLoginModal() {
             loginFormContainer.style.display = 'block';
@@ -222,7 +273,7 @@
             const buttonsToShow = allButtons.filter(button => button.roles.includes('public') || button.roles.includes(userRole));
 
             buttonsToShow.forEach(button => {
-                const btnElement = document.createElement('div');
+                const btnElement = document.createElement('div'); // Usei <div> em vez de <button> para facilitar o estilo
                 btnElement.id = button.id;
                 btnElement.classList.add('menu-item');
                 btnElement.textContent = button.text;
@@ -233,6 +284,11 @@
                 };
                 menuButtonsContainer.appendChild(btnElement);
             });
+            // Carrega o primeiro aplicativo disponível para o usuário
+            if (buttonsToShow.length > 0) {
+                const firstButton = document.getElementById(buttonsToShow[0].id);
+                loadApp(buttonsToShow[0].url, firstButton);
+            }
         }
 
         function loadApp(appFile, button) {
@@ -245,13 +301,11 @@
             }
         }
 
-        // Renderiza os botões públicos imediatamente ao carregar a página
         renderMenuButtons('public');
 
         auth.onAuthStateChanged(user => {
             renderAuthButtons(user);
             if (user) {
-                // Exibe o e-mail do usuário logado
                 emailDisplay.textContent = user.email;
 
                 db.collection('users').doc(user.uid).get()
@@ -265,7 +319,6 @@
                     });
                 hideLoginModal();
             } else {
-                // Limpa o e-mail quando o usuário faz logout
                 emailDisplay.textContent = '';
                 renderMenuButtons('public');
             }
